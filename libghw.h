@@ -1,5 +1,5 @@
 /* GHDL Wavefile reader library.
-  Copyright (C) 2005-2017 Tristan Gingold
+  Copyright (C) 2005-2025 Tristan Gingold
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
