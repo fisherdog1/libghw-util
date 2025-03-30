@@ -59,8 +59,7 @@ void *calloc_unwrap(size_t nmemb, size_t size) {
   return ret;
 }
 
-/* Reopen H through decompressor DECOMP.  */
-
+// Reopen H through decompressor DECOMP.
 static int ghw_openz(struct ghw_handler *h, const char *decomp,
                      const char *filename) {
   int plen = strlen(decomp) + 1 + strlen(filename) + 1;
@@ -79,6 +78,7 @@ static int ghw_openz(struct ghw_handler *h, const char *decomp,
   return 0;
 }
 
+// Open the file, stop having it be closed
 int ghw_open(struct ghw_handler *h, const char *filename) {
   char hdr[16];
 
@@ -119,31 +119,7 @@ int ghw_open(struct ghw_handler *h, const char *filename) {
     h->word_be = 1;
   else
     return -4;
-#if 0
-  /* Endianness.  */
-  {
-    int endian;
-    union
-    {
-      unsigned char b[4];
-      uint32_t i;
-    } v;
-    v.i = 0x11223344;
-    if (v.b[0] == 0x11)
-      endian = 2;
-    else if (v.b[0] == 0x44)
-      endian = 1;
-    else
-      return -3;
 
-    if (hdr[12] != 1 && hdr[12] != 2)
-      return -3;
-    if (hdr[12] != endian)
-      h->swap_word = 1;
-    else
-      h->swap_word = 0;
-  }
-#endif
   h->word_len = hdr[13];
   h->off_len = hdr[14];
 
@@ -154,6 +130,7 @@ int ghw_open(struct ghw_handler *h, const char *filename) {
   return 0;
 }
 
+// Same as 2-below but 32 bits
 int32_t ghw_get_i32(struct ghw_handler *h, unsigned char *b) {
   if (h->word_be)
     return (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | (b[3] << 0);
@@ -169,6 +146,7 @@ uint32_t ghw_get_i32_positive(struct ghw_handler *h, unsigned char *b) {
   return (uint32_t)val_i;
 }
 
+// Get signed 64 bit word from pointer (Doesn't check if unsigned char is a byte ;)
 int64_t ghw_get_i64(struct ghw_handler *ghw_h, unsigned char *b) {
   int l, h;
 
@@ -182,6 +160,7 @@ int64_t ghw_get_i64(struct ghw_handler *ghw_h, unsigned char *b) {
   return (((int64_t)h) << 32) | l;
 }
 
+// Read a 1 byte unsigned char
 int ghw_read_byte(struct ghw_handler *h, unsigned char *res) {
   int v;
 
@@ -192,6 +171,7 @@ int ghw_read_byte(struct ghw_handler *h, unsigned char *res) {
   return 0;
 }
 
+// Same as below but unsigned 32 bits, zero extended
 int ghw_read_uleb128(struct ghw_handler *h, uint32_t *res) {
   uint32_t r = 0;
   unsigned int off = 0;
@@ -209,26 +189,38 @@ int ghw_read_uleb128(struct ghw_handler *h, uint32_t *res) {
   return 0;
 }
 
+// Read 7 bits at a time from file, using 8th bit to determine whether to continue
 int ghw_read_sleb128(struct ghw_handler *h, int32_t *res) {
   int32_t r = 0;
   unsigned int off = 0;
 
   while (1) {
     int v = fgetc(h->stream);
+
+    // Ran out of bytes early?
     if (v == EOF)
       return -1;
+
+    // Append bits to result
     r |= ((int32_t)(v & 0x7f)) << off;
     off += 7;
+
+    // Continuation?
     if ((v & 0x80) == 0) {
+
+      // Sign extend
       if ((v & 0x40) && off < 32)
         r |= ~0U << off;
       break;
     }
   }
+
+  // Write result and return success
   *res = r;
   return 0;
 }
 
+// Same thing but up to 64 bits
 int ghw_read_lsleb128(struct ghw_handler *h, int64_t *res) {
   static const int64_t r_mask = -1;
   int64_t r = 0;
@@ -236,24 +228,35 @@ int ghw_read_lsleb128(struct ghw_handler *h, int64_t *res) {
 
   while (1) {
     int v = fgetc(h->stream);
+
+    // Ran out of bytes early?
     if (v == EOF)
       return -1;
+
+    // Append bits to result
     r |= ((int64_t)(v & 0x7f)) << off;
     off += 7;
+
+    // Continuation?
     if ((v & 0x80) == 0) {
       if ((v & 0x40) && off < 64)
         r |= r_mask << off;
       break;
     }
   }
+
+  // Write result and return success
   *res = r;
   return 0;
 }
 
+// Read a double
 int ghw_read_f64(struct ghw_handler *h, double *res) {
   /* FIXME: handle byte order.  */
   if (fread(res, sizeof(*res), 1, h->stream) != 1)
     return -1;
+
+  // Success
   return 0;
 }
 
