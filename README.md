@@ -30,6 +30,7 @@ The end of a GHW file contains a Directory, listing the sections of the file and
 Libghw does not read this format by reading the header and then jumping to the directory at the end. There's also not a totally safe way to jump to the directory, I.e. other than scanning for the DIR string, which could hit other data.
 
 ## Ghw_handler Struct
+The top level structure for file reading is struct ghw_handler. It stores one point in time of the signal values, the design hierarchy, type information, and strings. The value of snap_time increments and signal values change as the CYC section is read.
 ![Diagram](./img/schema.png "Test")
 
 ## Header
@@ -44,7 +45,7 @@ Offset 14 is "off_len"
 Offset 15 must be zero.
 
 ## Types Section
-
+The types section contains information highly specific to VHDL's type system. It can handle arrays, records, subtypes thereof, enums, and physical types. All strings used in this section are pointers into the strings section.
 
 ## Hierarchy Section
 The hierarchy section starts with a 16 byte header. The first 4 bytes must be zero. A 4 byte number of "scopes" follows, then an 4 byte number of signals. Then a 4 byte number of *basic* signals. This is the number of signals when all signals are dismantled into scalars, I.e. records and arrays taken apart into individual signals. This last value is nbr_sigs and will be important for the CYC section. One ghw_sig is callocated for each of these signals, plus an extra to act like a null terminator.
@@ -98,6 +99,9 @@ Values may be encoded in multiple ways, depending on their type.
 
 ## Endianness
 I currently have no way to check if libghw handle endianness correctly. I am inclined to think it doesn't, purely based on source comments.
+
+## Plans
+I would like a way to nicely render pieces of waveforms for generating documentation. This will properly have to be a Python wrapper since I want to use matplotlib.
 
 ## Opinions
 Unless im misunderstanding something, this format makes it somewhat difficult to get a time range of a specific signal, which happens to be my use case. On the other hand, this format makes writing, and particulary piping from a sim to a viewer easy. Since my use case involves reading already-finished sims, it should be easy to create a new data structure that indexes signals in a way I like, provided the CYC section has been scanned beyond the desired end time once.
