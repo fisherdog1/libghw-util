@@ -2,7 +2,7 @@
 This is an unofficial documentation of how the GHW file format and libghw work. I was unable to find a complete documentation elsewhere.
 
 ## Assumptions
-In some places, libghw makes the classic assumption that a char is one byte. This is not correct, but will be adopted for brevity within this documentation. Similarly, where features are present in libghw but not effect is observable, I will assume that it is not used anywhere. Of course, it's possible these features are actually written or read by GHDL or GTKwave.
+In some places, libghw makes the classic assumption that a char is one byte. This is not correct, but will be adopted for brevity within this documentation. Similarly, where features are present in libghw but no effect is observable, I will assume that it is not used anywhere. Of course, it's possible these features are actually written or read by GHDL or GTKwave.
 
 ## Sections
 The start of a GHW file contains a 16 byte header, described later.
@@ -54,7 +54,7 @@ The snapshot section starts with a 12 byte header. The first four bytes must be 
 The first SNP section is the start of a region that constitutes a list of "sm", which I will speculate means Simulation Marker. An sm may be a SNP, CYC, DIR, or TAI.
 
 The call tree for this part is confusing, so here is a summary:
-
+```
 ghw_read_sm
 	if sm == ghw_sm_init or ghw_sm_sect ->
 
@@ -78,10 +78,11 @@ ghw_read_sm
 			<0 -> error
 			1 -> ghw_read_cycle_cont()
 			>1 -> ghw_read_cycle_end(), sm = ghw_sm_sect
+```
 
-Based on flow, the CYC section can be said to contain subsections of type Start, Next, and Cont, based on the functions ghw_read_cycle_* functions with those suffixes.
+Based on this flow, the CYC section can be said to contain subsections of type Start, Next, and Cont, based on the functions ghw_read_cycle_* functions with those suffixes.
 * Start: Read a 64 bit initial simulation time
-* Next: Increment the simulation time
+* Next: Increment the simulation time. The special value -1 is used to mark the end of the simulation.
 * Cont: Update signal values which have changed
 
 Each signal (which takes a new value only?) is indexed via delta offsets in the sigs array. The new value of the signal follows. Note that ghw_read_cycle_cont both updates the signal values in the sigs array, and outputs a zero-terminated list of indices which were updated. The latter is a pointer always passed as null and thus not used.
@@ -91,3 +92,6 @@ Values may be encoded in multiple ways, depending on their type.
 
 ## Endianness
 I currently have no way to check if libghw handle endianness correctly. I am inclined to think it doesn't, purely based on source comments.
+
+## Opinions
+Unless im misunderstanding something, this format makes it somewhat difficult to get a time range of a specific signal, which happens to be my use case. On the other hand, this format makes writing, and particulary piping from a sim to a viewer easy. Since my use case involves reading already-finished sims, it should be easy to create a new data structure that indexes signals in a way I like, provided the CYC section has been scanned beyond the desired end time once.
