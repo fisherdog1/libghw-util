@@ -90,15 +90,6 @@ enum ghdl_rtik
   ghdl_rtik_subtype_unbounded_array,
   ghdl_rtik_subtype_record,
   ghdl_rtik_subtype_unbounded_record,
-#if 0
-  ghdl_rtik_subtype_access,	/* 40 */
-  ghdl_rtik_type_protected,
-  ghdl_rtik_element,
-  ghdl_rtik_unit,
-  ghdl_rtik_attribute_transaction,
-  ghdl_rtik_attribute_quiet,
-  ghdl_rtik_attribute_stable,
-#endif
   ghdl_rtik_error
 };
 
