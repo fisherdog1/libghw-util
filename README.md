@@ -31,6 +31,7 @@ Libghw does not read this format by reading the header and then jumping to the d
 
 ## Ghw_handler Struct
 The top level structure for file reading is struct ghw_handler. It stores one point in time of the signal values, the design hierarchy, type information, and strings. The value of snap_time increments and signal values change as the CYC section is read.
+
 ![Diagram](./img/schema.png "Test")
 
 ## Header
