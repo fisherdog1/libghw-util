@@ -245,7 +245,6 @@ int main(int argc, char **argv) {
         ghw_disp_hie(hp, hp->hie);
       }
 
-#if 1
       sm = ghw_sm_init;
       eof = 0;
       while (!eof) {
@@ -269,13 +268,6 @@ int main(int argc, char **argv) {
           abort();
         }
       }
-
-#else
-      if (ghw_read_dump(hp) < 0) {
-        fprintf(stderr, "error in ghw dump\n");
-        return 3;
-      }
-#endif
     }
     ghw_close(&h);
   }

@@ -1753,11 +1753,6 @@ int ghw_read_sm(struct ghw_handler *h, enum ghw_sm_type *sm) {
       }
       break;
     case ghw_sm_cycle:
-      if (0)
-        printf("Time is " GHWPRI64 " fs\n", h->snap_time);
-      if (0)
-        ghw_disp_values(h);
-
       res = ghw_read_cycle_next(h);
       if (res < 0)
         return res;
@@ -1786,12 +1781,6 @@ int ghw_read_cycle(struct ghw_handler *h) {
     res = ghw_read_cycle_cont(h, NULL);
     if (res < 0)
       return res;
-
-    if (0)
-      printf("Time is " GHWPRI64 " fs\n", h->snap_time);
-    if (0)
-      ghw_disp_values(h);
-
     res = ghw_read_cycle_next(h);
     if (res < 0)
       return res;
